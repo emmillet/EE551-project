@@ -44,5 +44,60 @@ class ImageAnalyzer:
         unique_pixels = np.unique(pixel_rows, axis=0)
         return [tuple(int(value) for value in row) for row in unique_pixels]
 
+    def extract_dominant_colors(self, num_colors):
+        """Extract dominant RGB colors based on frequency and color diversity."""
+        if isinstance(num_colors, bool) or not isinstance(num_colors, int):
+            raise ValueError("Number of colors must be an integer.")
+
+        if not 1 <= num_colors <= 256:
+            raise ValueError("Number of colors must be between 1 and 256.")
+
+        if self.image is None:
+            self.load_image()
+
+        # Extract more colors than requested so there are enough candidates to choose from when building the final palette
+        candidate_count = min(num_colors * 8, 256)
+        quantized = self.image.quantize(colors=candidate_count, kmeans=5).convert("RGB")
+
+        pixels = np.array(quantized).reshape(-1, 3)
+
+        # Count how many pixels belong to each candidate color
+        colors, counts = np.unique(pixels, axis=0, return_counts=True)
+
+        # Sort by frequency so the most common color is first
+        order = np.argsort(-counts, kind="stable")
+        colors = colors[order].astype(int)
+        counts = counts[order]
+
+        # Account for images with fewer colors than requested
+        target = min(num_colors, len(colors))
+
+        # Start the palette with the most frequent candidate color
+        selected = [0]
+
+        while len(selected) < target:
+            scores = np.zeros(len(colors))
+
+            for i, color in enumerate(colors):
+                if i in selected:
+                    continue
+                # Find the distance to the closest color already selected
+                # This helps avoid adding colors that look too similar
+                distance = min(
+                    np.linalg.norm(color - colors[j])
+                    for j in selected
+                )
+
+                # Balance color frequency with distance from the existing palette
+                # Use the square root so common colors don't outweigh diversity
+                scores[i] = np.sqrt(counts[i]) * distance
+
+            # Add the color with the best balance of frequency and distance
+            selected.append(int(np.argmax(scores)))
+
+        # Return regular Python RGB tuples for use with rgb_to_hex()
+        return [tuple(int(value) for value in colors[i])
+                for i in selected]
+
 if __name__ == "__main__":
     print("Import ImageAnalyzer in main.ipynb to analyze an image.")
