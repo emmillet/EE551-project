@@ -53,7 +53,7 @@ python -m pytest -v
 - `main.ipynb` — Main notebook for running the program and displaying results.
 
 ### Python Modules
-- `image_analyzer.py` — Loads images, analyzes RGB pixel data, and extracts dominant colors using Pillow and NumPy. Uses pixel frequency and color distance to generate diverse color palettes.
+- `image_analyzer.py` — Loads images, analyzes RGB pixel data, extracts diverse dominant colors, and calculates color proportions using Pillow and NumPy.
 - `color_palette.py` — Will manage extracted colors, palette indexing, and CSV exports.
 - `color_utils.py` — Converts RGB values to HEX and validates inputs.
 - `visualization.py` — Will display images and color palettes using Matplotlib.
@@ -63,7 +63,7 @@ python -m pytest -v
 - `output/` — Generated palette CSV files.
 
 ### Testing
-- `tests/test_image_analyzer.py` — Tests image loading, pixel analysis, and error handling.
+- `tests/test_image_analyzer.py` — Tests image loading, pixel analysis, color extraction, proportions, and error handling.
 - `tests/test_color_utils.py` — Tests RGB-to-HEX conversion and input validation.
 - `tests/test_color_palette.py` — Planned tests for palette operations and CSV exports.
 
@@ -76,11 +76,11 @@ python -m pytest -v
 
 Launch `jupyter notebook`, open `main.ipynb`, and select the environment's Python kernel. Run all cells from top to bottom.  Sample pictures sourced from Wikimedia Commons and a sample Pantone Color Palette are included in `images/`.
 
-The notebook currently demonstrates image loading, unique color analysis, RGB-to-HEX conversion, and dominant-color extraction with a customizable number of colors. In its current state, it is developer-facing for informal testing and demonstration of functionality and function calls for other group members. 
+The notebook currently demonstrates image loading, unique color analysis, RGB-to-HEX conversion, dominant-color extraction, and proportion calculations. In its current state, it is developer-facing for informal testing and demonstration of functionality and function calls for other group members. 
 
 ## Dominant Color Extraction
 
-Uses Pillow's color quantization with K-means refinement and NumPy to extract candidate colors. Colors are selected using weighted pixel frequency and RGB distance to reduce overlap and improve palette diversity. Supports palette sizes of 1–256 colors, depending on available colors.
+Uses Pillow quantization with K-means refinement and weighted frequency and RGB distance scoring to generate diverse palettes. Pixels are assigned to their closest palette color to calculate proportions, returned as an RGB-to-percentage dictionary sorted by dominance.
 
 ## Group Contributions
 Emma:
@@ -90,12 +90,16 @@ Emma:
 - Implemented dominant-color extraction with K-means refinement.
 - Developed frequency and distance scoring to improve palette diversity.
 - Added color-count validation and tested extraction across multiple images.
+- Implemented color proportion calculations using RGB distance.
+- Added Pytest tests for extraction, proportion accuracy, and invalid color counts.
 
 ## Next group tasks
-- Calculate color proportions by assigning pixels to the closest extracted color
-- Implement the `ColorPalette` class with `__str__` and `__getitem__`
-- Display color swatches and save the palette to CSV
-- Add Pytest tests for dominant-color extraction, color proportions, invalid color counts, palette operations, and CSV export
+- Implement `ColorPalette` and composition with `ImageAnalyzer`
+- Implement `__str__`, `__getitem__`, and `__len__`
+- Format palette records using `map()` and list comprehension
+- Display color swatches and export palettes to CSV
+- Integrate modules into a user-friendly notebook
+- Add Pytest tests for palette operations, CSV export, and integration
 - Update README with this info as we go: 
     Project title
     Project description, including project overview and functionalities

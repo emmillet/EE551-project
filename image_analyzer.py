@@ -44,8 +44,34 @@ class ImageAnalyzer:
         unique_pixels = np.unique(pixel_rows, axis=0)
         return [tuple(int(value) for value in row) for row in unique_pixels]
 
+    def _calculate_proportions(self, palette):
+        """Calculate the percentage of pixels represented by each palette color."""
+        palette = np.array(palette, dtype=np.int32)
+        pixels = self.get_pixels().reshape(-1, 3)
+        counts = np.zeros(len(palette), dtype=np.int64)
+
+        # Process pixels in batches to reduce memory usage on large images
+        for start in range(0, len(pixels), 4096):
+            batch = pixels[start:start + 4096].astype(np.int32)
+
+            # Compare each pixel to every palette color and find the closest one
+            differences = batch[:, None, :] - palette[None, :, :]
+            distances = np.sum(differences ** 2, axis=2)
+            closest = np.argmin(distances, axis=1)
+
+            # Add the number of pixels assigned to each color
+            counts += np.bincount(closest, minlength=len(palette))
+
+        # Convert counts to percentages and sort from most to least dominant
+        proportions = counts / len(pixels) * 100
+        order = np.argsort(-counts, kind="stable")
+
+        # Store RGB tuples and percentages in a dictionary
+        return {tuple(int(value) for value in palette[i]): float(proportions[i])
+                for i in order}
+    
     def extract_dominant_colors(self, num_colors):
-        """Extract dominant RGB colors based on frequency and color diversity."""
+        """Return a dictionary of dominant RGB colors and percentages, sorted by dominance."""
         if isinstance(num_colors, bool) or not isinstance(num_colors, int):
             raise ValueError("Number of colors must be an integer.")
 
@@ -55,7 +81,7 @@ class ImageAnalyzer:
         if self.image is None:
             self.load_image()
 
-        # Extract more colors than requested so there are enough candidates to choose from when building the final palette
+        # Extract extra candidate colors to allow for more palette diversity
         candidate_count = min(num_colors * 8, 256)
         quantized = self.image.quantize(colors=candidate_count, kmeans=5).convert("RGB")
 
@@ -95,9 +121,9 @@ class ImageAnalyzer:
             # Add the color with the best balance of frequency and distance
             selected.append(int(np.argmax(scores)))
 
-        # Return regular Python RGB tuples for use with rgb_to_hex()
-        return [tuple(int(value) for value in colors[i])
-                for i in selected]
+        # Calculate proportions for the selected palette colors
+        palette = colors[selected]
+        return self._calculate_proportions(palette)
 
 if __name__ == "__main__":
     print("Import ImageAnalyzer in main.ipynb to analyze an image.")
