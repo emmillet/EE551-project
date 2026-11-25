@@ -68,25 +68,42 @@ class ColorPalette:
 
     The output folder is created if it does not exist yet.
     Returns the Path of the saved CSV file.
+
+    Raises ValueError if the palette is empty, the path is not a .csv file,
+    the path is an existing folder, or the file cannot be written.
     """
+    if len(self) == 0:
+      raise ValueError("Cannot export an empty palette.")
+
     output_path = Path(output_path)
 
-    # Make sure the folder for the CSV file exists
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    # Only allow CSV files so the output opens correctly in spreadsheet apps
+    if output_path.suffix.lower() != ".csv":
+      raise ValueError(f"Output file must end in .csv: {output_path}")
+
+    if output_path.is_dir():
+      raise ValueError(f"Output path is a folder, not a file: {output_path}")
 
     # Reuse the formatted records so the CSV matches the visualization
     records = self.format_colors()
 
-    with output_path.open("w", newline="", encoding="utf-8") as csv_file:
-      writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADERS)
-      writer.writeheader()
+    try:
+      # Make sure the folder for the CSV file exists
+      output_path.parent.mkdir(parents=True, exist_ok=True)
 
-      # Write one row per palette color
-      for record in records:
-        writer.writerow({
-          "RGB": str(record["RGB"]),
-          "HEX": record["HEX"],
-          "Percentage": f"{record['Percentage']:.2f}",
-        })
+      with output_path.open("w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADERS)
+        writer.writeheader()
+
+        # Write one row per palette color
+        for record in records:
+          writer.writerow({
+            "RGB": str(record["RGB"]),
+            "HEX": record["HEX"],
+            "Percentage": f"{record['Percentage']:.2f}",
+          })
+    except OSError as error:
+      # Covers missing permissions or a file being used as a folder name
+      raise ValueError(f"Cannot write palette to {output_path}: {error}") from error
 
     return output_path

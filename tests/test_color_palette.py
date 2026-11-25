@@ -64,3 +64,35 @@ def test_export_overwrites_existing_file(tmp_path):
     rows = read_csv(output_path)
     assert len(rows) == 1
     assert rows[0]["HEX"] == "#070809"
+
+
+# Run the same test with different file types that are not CSV
+@pytest.mark.parametrize("filename", ["palette.txt", "palette", "palette.csv.png"])
+def test_export_rejects_non_csv(tmp_path, filename):
+    """Only .csv output paths should be accepted."""
+    with pytest.raises(ValueError):
+        ColorPalette({(1, 2, 3): 100.0}).export_palette(tmp_path / filename)
+
+
+def test_export_rejects_folder_path(tmp_path):
+    """An existing folder cannot be used as the output file."""
+    folder = tmp_path / "looks_like.csv"
+    folder.mkdir()
+    with pytest.raises(ValueError):
+        ColorPalette({(1, 2, 3): 100.0}).export_palette(folder)
+
+
+def test_export_unwritable_location(tmp_path):
+    """A path whose parent is a file (not a folder) should give a clear error."""
+    blocker = tmp_path / "not_a_folder"
+    blocker.write_text("this is a file")
+    with pytest.raises(ValueError):
+        ColorPalette({(1, 2, 3): 100.0}).export_palette(blocker / "palette.csv")
+
+
+def test_export_empty_palette(tmp_path):
+    """An empty palette should not create a CSV file."""
+    output_path = tmp_path / "empty.csv"
+    with pytest.raises(ValueError):
+        ColorPalette({}).export_palette(output_path)
+    assert not output_path.exists()
