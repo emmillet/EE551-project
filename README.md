@@ -94,14 +94,14 @@ Emma:
 - Added Pytest tests for extraction, proportion accuracy, and invalid color counts.
 
 Julia:
--Created ColorPalette class to store dominant RGB colors and their percentages.
--Added methods to retrieve colors and proportions.
--Integrated ColorPalette with ImageAnalyzer using composition.
--Implemented __str__() for palette information.
--Implemented __getitem__() for indexing colors and proportions.
--Implemented __len__() for palette sizing purporses.
--Used map() to convert RGB values to HEX codes.
--Used list comprehension to format palette data.
+- Created ColorPalette class to store dominant RGB colors and their percentages.
+- Added methods to retrieve colors and proportions.
+- Integrated ColorPalette with ImageAnalyzer using composition.
+- Implemented __str__() for palette information.
+- Implemented __getitem__() for indexing colors and proportions.
+- Implemented __len__() for palette sizing purporses.
+- Used map() to convert RGB values to HEX codes.
+- Used list comprehension to format palette data.
 
 
 ## Next group tasks
