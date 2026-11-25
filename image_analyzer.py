@@ -3,6 +3,7 @@
 from pathlib import Path
 import numpy as np
 from PIL import Image, UnidentifiedImageError
+from color_palette import ColorPalette
 
 
 class ImageAnalyzer:
@@ -12,6 +13,7 @@ class ImageAnalyzer:
         """Store the path to an image that will be analyzed."""
         self.image_path = Path(image_path)
         self.image = None
+        self.palette = None
 
     def load_image(self):
         """Open the image and make sure all pixels use RGB colors."""
@@ -123,7 +125,8 @@ class ImageAnalyzer:
 
         # Calculate proportions for the selected palette colors
         palette = colors[selected]
-        return self._calculate_proportions(palette)
+        self.palette = ColorPalette(self._calculate_proportions(palette))
+        return self.palette
 
 if __name__ == "__main__":
     print("Import ImageAnalyzer in main.ipynb to analyze an image.")
