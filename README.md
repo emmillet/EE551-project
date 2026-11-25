@@ -2,19 +2,67 @@
 
 Description to be written here 
 
-## Set up (Python 3.12–3.14)
+## Dependencies
 
-In the project folder:
+Python 3.12–3.14 is required. All libraries are listed in `requirements.txt`:
 
-```powershell
-py -3.14 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-```
+| Library | Purpose |
+|---|---|
+| `numpy` | Pixel arrays, color distances, and proportions |
+| `Pillow` | Loading JPG/PNG images and color quantization |
+| `matplotlib` | Displaying the image and color swatches |
+| `ipywidgets` | Interactive controls in the notebook |
+| `notebook`, `ipykernel` | Running `main.ipynb` in Jupyter |
+| `pytest` | Running the automated tests |
 
-For macOS/Linux, create the environment with `python3 -m venv .venv` and activate with `source .venv/bin/activate`.
+Built-in modules used: `pathlib` (file paths) and `csv` (palette export).
+
+## Set up
+
+### Windows (PowerShell)
+
+1. Install Python 3.12–3.14 from [python.org](https://www.python.org/downloads/) and check "Add Python to PATH".
+2. Open PowerShell and go to the project folder:
+   ```powershell
+   git clone https://github.com/emmillet/EE551-project.git
+   cd EE551-project
+   ```
+3. Create and activate a virtual environment, then install the libraries:
+   ```powershell
+   py -3.14 -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   python -m pip install -r requirements.txt
+   ```
+   If PowerShell blocks the activate script, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once and try again.
+4. Register the environment as a Jupyter kernel:
+   ```powershell
+   python -m ipykernel install --user --name ee551-palette --display-name "Python (EE551 Palette)"
+   ```
+
+### macOS (Terminal)
+
+1. Install Python 3.12–3.14 from [python.org](https://www.python.org/downloads/) or with Homebrew (`brew install python@3.13`).
+2. Open Terminal and go to the project folder:
+   ```bash
+   git clone https://github.com/emmillet/EE551-project.git
+   cd EE551-project
+   ```
+3. Create and activate a virtual environment, then install the libraries:
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   python -m pip install -r requirements.txt
+   ```
+4. Register the environment as a Jupyter kernel:
+   ```bash
+   python -m ipykernel install --user --name ee551-palette --display-name "Python (EE551 Palette)"
+   ```
+
+Activate the environment again (step 3's activate command) each time you open a new terminal.
 
 ## Test
+
+With the environment activated, from the project folder:
 
 ```bash
 python -m pytest -v
@@ -54,9 +102,9 @@ python -m pytest -v
 
 ### Python Modules
 - `image_analyzer.py` — Loads images, analyzes RGB pixel data, extracts diverse dominant colors, and calculates color proportions using Pillow and NumPy.
-- `color_palette.py` — Will manage extracted colors, palette indexing, and CSV exports.
+- `color_palette.py` — Stores extracted colors and percentages, supports `str()`, indexing, and `len()`, formats RGB/HEX/percentage records, and exports palettes to CSV with `export_palette()`.
 - `color_utils.py` — Converts RGB values to HEX and validates inputs.
-- `visualization.py` — Will display images and color palettes using Matplotlib.
+- `visualization.py` — `show_palette()` displays the original image above color swatches labeled with RGB, HEX, and percentages using Matplotlib.
 
 ### Data and Output
 - `images/` — Sample images for testing and demonstration.
@@ -65,16 +113,49 @@ python -m pytest -v
 ### Testing
 - `tests/test_image_analyzer.py` — Tests image loading, pixel analysis, color extraction, proportions, and error handling.
 - `tests/test_color_utils.py` — Tests RGB-to-HEX conversion and input validation.
-- `tests/test_color_palette.py` — Planned tests for palette operations and CSV exports.
+- `tests/test_color_palette.py` — Tests CSV export values, folder creation, overwriting, and error handling for invalid output paths.
 
 ### Other Files
 - `requirements.txt` — Required Python libraries.
 - `README.md` — Project documentation and setup instructions.
 - `.gitignore` — Excludes temporary and environment files from Git.
 
-## Run the notebook
+## Run the program
 
-Launch `jupyter notebook`, open `main.ipynb`, and select the environment's Python kernel. Run all cells from top to bottom.  Sample pictures sourced from Wikimedia Commons and a sample Pantone Color Palette are included in `images/`.
+### Notebook (Windows or macOS)
+
+1. Activate the environment (see Set up, step 3).
+2. From the project folder, run `jupyter notebook`. A browser tab opens.
+3. Open `main.ipynb`.
+4. Choose **Kernel → Change Kernel → Python (EE551 Palette)**.
+5. Choose **Run → Run All Cells**, or run the cells from top to bottom.
+
+### From Python
+
+```python
+from image_analyzer import ImageAnalyzer
+from color_palette import ColorPalette
+from visualization import show_palette
+
+image = "images/Quebrada_de_las_Conchas_04.jpg"
+palette = ColorPalette(ImageAnalyzer(image).extract_dominant_colors(6))
+
+print(palette)                               # readable summary
+show_palette(image, palette)                 # image + labeled swatches
+palette.export_palette("output/palette.csv") # RGB, HEX, Percentage columns
+```
+
+`export_palette()` creates the `output/` folder if needed. It raises a `ValueError` if the palette is empty, the file name does not end in `.csv`, the path is a folder, or the location cannot be written.
+
+## Image Sources and Licensing
+
+| File | Source | Author | License |
+|---|---|---|---|
+| `images/Quebrada_de_las_Conchas_04.jpg` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Quebrada_de_las_Conchas_04.jpg) | Bernard Gagnon | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
+| `images/Emosson_Construction.jpg` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Emosson_Construction.jpg) | Unknown, possibly Heinz Baumann, Comet Photo AG (Zürich) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
+| `images/sample.png` | Sample Pantone color palette | — | Used for testing only |
+
+The images are used unmodified for educational, non-commercial testing and demonstration.
 
 The notebook currently demonstrates image loading, unique color analysis, RGB-to-HEX conversion, dominant-color extraction, and proportion calculations. In its current state, it is developer-facing for informal testing and demonstration of functionality and function calls for other group members. 
 
@@ -103,11 +184,17 @@ Julia:
 - Used map() to convert RGB values to HEX codes.
 - Used list comprehension to format palette data.
 
+Drashti:
+- Implemented `export_palette()` to save RGB, HEX, and percentages to CSV using pathlib.
+- Implemented `visualization.py` to display the image with labeled color swatches using Matplotlib.
+- Added Pytest tests for CSV export functionality and accuracy.
+- Added CSV export error handling (empty palettes, non-CSV names, folder paths, unwritable locations) with tests.
+- Wrote README dependencies, Windows/macOS setup and run instructions, Jupyter kernel setup, file descriptions, and image sources/licensing.
+
 
 ## Next group tasks
-- Display color swatches and export palettes to CSV
 - Integrate modules into a user-friendly notebook
-- Add Pytest tests for palette operations, CSV export, and integration
+- Add Pytest tests for palette operations and integration
 - Update README with this info as we go: 
     Project title
     Project description, including project overview and functionalities
