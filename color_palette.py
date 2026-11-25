@@ -2,7 +2,13 @@
 Stores the dominant colors extracted from an image.
 """
 
+import csv
+from pathlib import Path
+
 from color_utils import rgb_to_hex
+
+# Column names used for exported palette CSV files
+CSV_HEADERS = ["RGB", "HEX", "Percentage"]
 
 class ColorPalette:
   """
@@ -55,3 +61,32 @@ class ColorPalette:
     ]
 
     return formatted_colors
+
+  def export_palette(self, output_path="output/palette.csv"):
+    """
+    Export the palette's RGB, HEX, and percentage values to a CSV file.
+
+    The output folder is created if it does not exist yet.
+    Returns the Path of the saved CSV file.
+    """
+    output_path = Path(output_path)
+
+    # Make sure the folder for the CSV file exists
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Reuse the formatted records so the CSV matches the visualization
+    records = self.format_colors()
+
+    with output_path.open("w", newline="", encoding="utf-8") as csv_file:
+      writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADERS)
+      writer.writeheader()
+
+      # Write one row per palette color
+      for record in records:
+        writer.writerow({
+          "RGB": str(record["RGB"]),
+          "HEX": record["HEX"],
+          "Percentage": f"{record['Percentage']:.2f}",
+        })
+
+    return output_path
