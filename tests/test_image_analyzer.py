@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from PIL import Image
 from image_analyzer import ImageAnalyzer
-
+from color_palette import ColorPalette
 
 def test_load_image_and_pixels(tmp_path):
     """A saved image should load with the expected size and pixels."""
@@ -52,12 +52,12 @@ def test_dominant_color_proportions(tmp_path):
     palette = ImageAnalyzer(image_path).extract_dominant_colors(2)
 
     # Check that colors are ordered from most to least dominant
-    assert list(palette) == [(255, 0, 0), (0, 0, 255)]
+    assert list(palette.colors) == [(255, 0, 0), (0, 0, 255)]
 
     # Verify individual percentages and total proportion
-    assert palette[(255, 0, 0)] == pytest.approx(70)
-    assert palette[(0, 0, 255)] == pytest.approx(30)
-    assert sum(palette.values()) == pytest.approx(100)
+    assert palette.colors[(255, 0, 0)] == pytest.approx(70)
+    assert palette.colors[(0, 0, 255)] == pytest.approx(30)
+    assert sum(palette.colors.values()) == pytest.approx(100)
 
 
 def test_single_color_palette(tmp_path):
@@ -70,7 +70,7 @@ def test_single_color_palette(tmp_path):
     palette = ImageAnalyzer(image_path).extract_dominant_colors(8)
 
     # Check that only the original color is returned
-    assert palette == {(20, 40, 60): 100.0}
+    assert palette.colors == {(20, 40, 60): 100.0}
 
 
 # Run the same test with different invalid color counts
@@ -98,6 +98,19 @@ def test_reduced_palette_proportions(tmp_path):
     palette = ImageAnalyzer(image_path).extract_dominant_colors(2)
 
     # Verify that both shades of red contribute to the red proportion
-    assert list(palette) == [(255, 0, 0), (0, 0, 255)]
-    assert palette[(255, 0, 0)] == pytest.approx(80)
-    assert palette[(0, 0, 255)] == pytest.approx(20)
+    assert list(palette.colors) == [(255, 0, 0), (0, 0, 255)]
+    assert palette.colors[(255, 0, 0)] == pytest.approx(80)
+    assert palette.colors[(0, 0, 255)] == pytest.approx(20)
+
+def test_palette_composition(tmp_path):
+    """ImageAnalyzer should create and store a ColorPalette object."""
+    image_path = tmp_path / "solid.png"
+    Image.new("RGB", (4, 4), (255, 0, 0)).save(image_path)
+
+    analyzer = ImageAnalyzer(image_path)
+    palette = analyzer.extract_dominant_colors(1)
+
+    # Check that the analyzer stores the generated palette
+    assert isinstance(palette, ColorPalette)
+    assert analyzer.palette is palette
+    assert palette.colors == {(255, 0, 0): 100.0}

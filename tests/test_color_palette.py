@@ -45,9 +45,9 @@ def test_export_from_image(tmp_path):
     image = Image.new("RGB", (10, 10), (255, 0, 0))
     image.paste((0, 0, 255), (0, 0, 10, 3))
     image.save(image_path)
-
-    colors = ImageAnalyzer(image_path).extract_dominant_colors(2)
-    rows = read_csv(ColorPalette(colors).export_palette(tmp_path / "out.csv"))
+    
+    palette = ImageAnalyzer(image_path).extract_dominant_colors(2)
+    rows = read_csv(palette.export_palette(tmp_path / "out.csv"))
 
     assert [row["HEX"] for row in rows] == ["#FF0000", "#0000FF"]
     assert [float(row["Percentage"]) for row in rows] == pytest.approx([70, 30])
