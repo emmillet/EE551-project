@@ -83,9 +83,14 @@ class ImageAnalyzer:
         if self.image is None:
             self.load_image()
 
+        # Use a smaller image to speed up color extraction
+        # Keep the original image for proportion calculations
+        analysis_image = self.image.copy()
+        analysis_image.thumbnail((400, 400))
+
         # Extract extra candidate colors to allow for more palette diversity
         candidate_count = min(num_colors * 8, 256)
-        quantized = self.image.quantize(colors=candidate_count, kmeans=5).convert("RGB")
+        quantized = analysis_image.quantize(colors=candidate_count, kmeans=5).convert("RGB")
 
         pixels = np.array(quantized).reshape(-1, 3)
 
