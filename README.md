@@ -12,6 +12,7 @@ Python 3.12–3.14 is required. All libraries are listed in `requirements.txt`:
 | `Pillow` | Loading JPG/PNG images and color quantization |
 | `matplotlib` | Displaying the image and color swatches |
 | `ipywidgets` | Interactive controls in the notebook |
+| `pyperclip` | Copying HEX codes to the clipboard |
 | `notebook`, `ipykernel` | Running `main.ipynb` in Jupyter |
 | `pytest` | Running the automated tests |
 
@@ -98,7 +99,7 @@ python -m pytest -v
 ## File Descriptions
 
 ### Main Program
-- `main.ipynb` — Main notebook for running the program and displaying results.
+- `main.ipynb` — Interactive notebook for selecting images, generating and viewing color palettes, copying HEX codes, and exporting results to CSV.
 
 ### Python Modules
 - `image_analyzer.py` — Loads images, analyzes RGB pixel data, extracts diverse dominant colors, and calculates color proportions using Pillow and NumPy.
@@ -128,21 +129,25 @@ python -m pytest -v
 2. From the project folder, run `jupyter notebook`. A browser tab opens.
 3. Open `main.ipynb`.
 4. Choose **Kernel → Change Kernel → Python (EE551 Palette)**.
-5. Choose **Run → Run All Cells**, or run the cells from top to bottom.
+5. Optionally, add your own JPG or PNG images to the `images/` folder.
+6. Choose **Run → Run All Cells**, or run the cells from top to bottom.
+7. Select an image from the dropdown and choose the number of colors.
+8. Click **Generate Palette** to display the image, extracted colors, and their proportions.
+9. Click a HEX code to copy it, or use Previous/Next to browse additional colors.
+10. Click **Export CSV** to save the palette in the `output/` folder.
 
 ### From Python
 
 ```python
 from image_analyzer import ImageAnalyzer
-from color_palette import ColorPalette
 from visualization import show_palette
 
 image = "images/Quebrada_de_las_Conchas_04.jpg"
-palette = ColorPalette(ImageAnalyzer(image).extract_dominant_colors(6))
+palette = ImageAnalyzer(image).extract_dominant_colors(6)
 
-print(palette)                               # readable summary
-show_palette(image, palette)                 # image + labeled swatches
-palette.export_palette("output/palette.csv") # RGB, HEX, Percentage columns
+print(palette)                                # readable summary
+show_palette(image, palette)                  # image and labeled swatches
+palette.export_palette("output/palette.csv")  # RGB, HEX, Percentage columns
 ```
 
 `export_palette()` creates the `output/` folder if needed. It raises a `ValueError` if the palette is empty, the file name does not end in `.csv`, the path is a folder, or the location cannot be written.
@@ -157,11 +162,9 @@ palette.export_palette("output/palette.csv") # RGB, HEX, Percentage columns
 
 The images are used unmodified for educational, non-commercial testing and demonstration.
 
-The notebook currently demonstrates image loading, unique color analysis, RGB-to-HEX conversion, dominant-color extraction, and proportion calculations. In its current state, it is developer-facing for informal testing and demonstration of functionality and function calls for other group members. 
-
 ## Dominant Color Extraction
 
-Uses Pillow quantization with K-means refinement and weighted frequency and RGB distance scoring to generate diverse palettes. Pixels are assigned to their closest palette color to calculate proportions, returned as an RGB-to-percentage dictionary sorted by dominance.
+Uses Pillow quantization with K-means refinement and frequency and RGB distance scoring to generate diverse palettes. A smaller image is used for faster color extraction, while proportions are calculated using the original image. The results are stored in a `ColorPalette` object, sorted from most to least dominant.
 
 ## Group Contributions
 Emma:
@@ -173,6 +176,9 @@ Emma:
 - Added color-count validation and tested extraction across multiple images.
 - Implemented color proportion calculations using RGB distance.
 - Added Pytest tests for extraction, proportion accuracy, and invalid color counts.
+- Updated existing tests after ColorPalette integration and added a composition test.
+- Integrated image analysis, palette visualization, and CSV export into the main notebook.
+- Created an interactive interface with image previews, color selection, HEX copying, and palette navigation.
 
 Julia:
 - Created ColorPalette class to store dominant RGB colors and their percentages.
@@ -193,7 +199,6 @@ Drashti:
 
 
 ## Next group tasks
-- Integrate modules into a user-friendly notebook
 - Add Pytest tests for palette operations and integration
 - Update README with this info as we go: 
     Project title
